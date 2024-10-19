@@ -1,61 +1,67 @@
-在二维空间中，**复数形式**与**二维向量**之间有非常紧密的联系。我们可以通过复数来优雅地表示和操作二维向量，尤其是进行旋转变换。接下来我将详细说明如何用复数形式表示二维向量。
+# ROPE (Rotary Position Embedding) 数学推导
 
-### 1. **二维向量和复数之间的关系**
+## 从内积角度
 
-一个**二维向量**可以写作：
-\[
-\mathbf{v} = (x, y)
-\]
-其中 \( x \) 是向量在 \( x \) 轴上的分量，\( y \) 是向量在 \( y \) 轴上的分量。
+设 $\vec{x}_m, \vec{x}_n$ 为 d 维向量，$\Theta$ 为位置编码矩阵，则有：
 
-而一个**复数**可以写作：
-\[
-z = x + iy
-\]
-其中：
-- \( x \) 是复数的**实部**（对应 \( x \) 轴上的分量），
-- \( y \) 是复数的**虚部**（对应 \( y \) 轴上的分量），
-- \( i \) 是虚数单位，满足 \( i^2 = -1 \)。
+### 基本定义
 
-因此，复数 \( z = x + iy \) 可以自然地表示为一个二维向量 \( (x, y) \)。这就是复数和二维向量之间的基本对应关系。
+$\vec{y}_m = W_q \vec{x}_m e^{im\theta} = (W_q \vec{x}_m) e^{im\theta} = \vec{q}_m e^{im\theta}$ (1)
 
-### 2. **复数的几何意义**：旋转与缩放
+$\vec{y}_n = W_k \vec{x}_n e^{in\theta} = (W_k \vec{x}_n) e^{in\theta} = \vec{q}_n e^{in\theta}$ (2)
 
-复数不仅可以表示一个二维向量，还可以通过复数的运算来进行几何变换，尤其是**旋转**和**缩放**。
+### 内积计算
 
-- **复数的模** \( |z| = \sqrt{x^2 + y^2} \) 表示向量的长度（即向量的模）。
-- **复数的辐角** \( \theta = \arg(z) \) 表示向量与实轴之间的夹角。
+$\vec{y}_m^T \vec{y}_n = (\vec{q}_m^T \vec{q}_n) \begin{pmatrix} \cos((m-n)\theta) & -\sin((m-n)\theta) \\ \sin((m-n)\theta) & \cos((m-n)\theta) \end{pmatrix} \begin{pmatrix} k_1^T \\ k_2^T \end{pmatrix}$ (3)
 
-因此，复数不仅表示了向量的大小（模），还表示了向量的方向（辐角）。
+展开可得同样的注意力计算公式
 
-### 3. **用复数表示二维向量的旋转**
+### 复数形式表达
 
-在复数中，旋转操作可以通过**复数乘法**实现。通过乘以一个单位模的复数 \( e^{i\theta} \)，我们可以将复数对应的二维向量**旋转**一个角度 \( \theta \)。这就是复数在几何上的一个核心优势。
+$\vec{y}_m = W_q \vec{x}_m e^{im\theta} = (W_q \vec{x}_m) e^{im\theta} = \vec{q}_m e^{im\theta}$
 
-根据**欧拉公式**：
-\[
-e^{i\theta} = \cos(\theta) + i \sin(\theta)
-\]
-我们可以使用复数形式 \( e^{i\theta} \) 对二维向量进行旋转。
+$\therefore \vec{q}_m = \begin{pmatrix} W_q^1 \\ W_q^2 \end{pmatrix} \vec{x}_m = \begin{pmatrix} \vec{q}_m^1 \\ \vec{q}_m^2 \end{pmatrix}$
 
-假设原始的二维向量（或复数）是 \( z = x + iy \)，我们要将它旋转一个角度 \( \theta \)，可以通过复数乘法来实现：
-\[
-z' = z \cdot e^{i\theta} = (x + iy) \cdot (\cos(\theta) + i \sin(\theta))
-\]
-展开这个表达式：
-\[
-z' = (x \cos(\theta) - y \sin(\theta)) + i(x \sin(\theta) + y \cos(\theta))
-\]
-这里的实部和虚部分别代表旋转后的向量在 \( x \) 轴和 \( y \) 轴上的分量。可以看到，它对应的是标准的二维向量旋转公式：
+可以表示为复数形式：$\vec{q}_m = \vec{q}_m^1 + i\vec{q}_m^2$
 
-\[
-\mathbf{v}' = \begin{pmatrix} x' \\ y' \end{pmatrix} = \begin{pmatrix} \cos(\theta) & -\sin(\theta) \\ \sin(\theta) & \cos(\theta) \end{pmatrix} \begin{pmatrix} x \\ y \end{pmatrix}
-\]
+### 欧拉公式
 
-### 4. **总结**
+$(e^{im\theta} + e^{-im\theta}) = \cos(m\theta) + i\sin(m\theta)$
 
-- 一个二维向量 \( (x, y) \) 可以用复数 \( z = x + iy \) 表示。
-- 复数的乘法可以用来进行向量的旋转操作。通过乘以 \( e^{i\theta} \)，可以将向量旋转一个角度 \( \theta \)。
-- 复数的几何意义使得它成为处理二维向量（尤其是旋转）的一个非常方便的工具。
+$(W_q \vec{x}_m) e^{im\theta} = \vec{q}_m e^{im\theta} = (\vec{q}_m^1 + i\vec{q}_m^2)(\cos(m\theta) + i\sin(m\theta))$
 
-在 **RoPE（旋转位置编码）** 中，通过乘以 \( e^{im\theta} \) 来对词向量进行旋转编码，其中 \( m \) 是词的位置，\( \theta \) 是旋转步长。每个词向量经过这种旋转后，可以自然地嵌入到自注意力机制中，捕捉到词与词之间的相对位置信息。
+$= (\vec{q}_m^1 \cos(m\theta) - \vec{q}_m^2 \sin(m\theta)) + i(\vec{q}_m^2 \cos(m\theta) + \vec{q}_m^1 \sin(m\theta))$
+
+$= \begin{pmatrix} \cos(m\theta) & -\sin(m\theta) \\ \sin(m\theta) & \cos(m\theta) \end{pmatrix} \begin{pmatrix} \vec{q}_m^1 \\ \vec{q}_m^2 \end{pmatrix}$
+
+这就是旋转矩阵形式
+
+### 注意力计算
+
+$Attention(Q,K,V) = softmax(\frac{QK^T}{\sqrt{d_k}})V$，V不计算 $QK^T$ 就能得到 (3) 式
+
+## 矩阵形式
+
+$\vec{y}_m = \begin{pmatrix} \cos(m\theta) & -\sin(m\theta) \\ \sin(m\theta) & \cos(m\theta) \end{pmatrix} \begin{pmatrix} \vec{q}_m^1 \\ \vec{q}_m^2 \end{pmatrix}$
+
+### 矩阵分解
+
+$\begin{pmatrix} \cos m\theta_0 & -\sin m\theta_0 & 0 & 0 & \cdots & 0 & 0 \\ \sin m\theta_0 & \cos m\theta_0 & 0 & 0 & \cdots & 0 & 0 \\ 0 & 0 & \cos m\theta_1 & -\sin m\theta_1 & 0 & 0 & 0 \\ 0 & 0 & \sin m\theta_1 & \cos m\theta_1 & 0 & 0 & 0 \\ \vdots & \vdots & \vdots & \vdots & \ddots & \vdots & \vdots \\ 0 & 0 & 0 & 0 & \cdots & \cos m\theta_{d/2-1} & -\sin m\theta_{d/2-1} \\ 0 & 0 & 0 & 0 & \cdots & \sin m\theta_{d/2-1} & \cos m\theta_{d/2-1} \end{pmatrix} \begin{pmatrix} q_0 \\ q_1 \\ q_2 \\ q_3 \\ \vdots \\ q_{d-2} \\ q_{d-1} \end{pmatrix}$
+
+矩阵可拆分为两个矩阵相乘：
+
+$\begin{pmatrix} q_0 \\ q_1 \\ q_2 \\ q_3 \\ \vdots \\ q_{d-2} \\ q_{d-1} \end{pmatrix} \otimes \begin{pmatrix} \cos m\theta_0 \\ \cos m\theta_0 \\ \cos m\theta_1 \\ \cos m\theta_1 \\ \vdots \\ \cos m\theta_{d/2-1} \\ \cos m\theta_{d/2-1} \end{pmatrix} + \begin{pmatrix} -q_1 \\ q_0 \\ -q_3 \\ q_2 \\ \vdots \\ -q_{d-1} \\ q_{d-2} \end{pmatrix} \otimes \begin{pmatrix} \sin m\theta_0 \\ \sin m\theta_0 \\ \sin m\theta_1 \\ \sin m\theta_1 \\ \vdots \\ \sin m\theta_{d/2-1} \\ \sin m\theta_{d/2-1} \end{pmatrix}$
+
+$\theta_i = 10000^{-2i/d}, i \in [0, 1, \cdots, \frac{d}{2}-1]$
+
+$\theta = 1.0 / (base ** (torch.arange(0, d, 2).float() / d))$, float()
+
+恒等式：$e^{-i\omega t} = \cos(\omega t) - i\sin(\omega t)$
+
+实现时需要计算每种频率的 $m\theta_i$，对第 $m$ 个词，$m\theta_0, m\theta_1, \cdots, m\theta_{d/2-1}$ 要双倍，
+对应第 $m$ 行，$m\theta_i$ 要双倍
+
+$xb\_theta2 = torch.cat([xb\_theta[:, :, :, None], xb\_theta[:, :, :, None]], 3)$
+
+$cos\_cached = xb\_theta2[:, :, :, 0].cos()[:, None, None, :]$
+$sin\_cached = xb\_theta2[:, :, :, 0].sin()[:, None, None, :]$
