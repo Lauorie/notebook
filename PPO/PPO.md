@@ -11,19 +11,18 @@ RLHF的核心就是4个模型之间的交互过程
 - Critic model（**不参与训练**）：Reward_model 复制而来
     - 该模型是用来计算单个token的reward
 
-![alt text](image.png)
+![deepspeedchat](./PPO/deepspeedchat.png)
 
 # 强化学习基础知识
 
-- **Q(s_t, a_t)** 状态动作值函数:  
-  t 时刻，状态 s_t 下执行动作 a 能获得的 reward 之和
-
-- **V(s_t)** 状态值函数:  
-  t 时刻，状态 s_t 下能获得的 reward 之和
-
-- **A(s_t, a_t)** 优势函数:  
-  **A(s_t, a_t) = Q(s_t, a_t) - V(s_t)**
-
+- **$Q(s_t, a_t)$ 状态动作值函数:**  
+  $t$ 时刻，状态 $s_t$ 下执行动作 $a_t$ 能获得的 reward 之和
+  
+- **$V(s_t)$ 状态值函数:**  
+  $t$ 时刻，状态 $s_t$ 下能获得的 reward 之和
+  
+- **$A(s_t, a_t)$ 优势函数:**  
+  $A(s_t, a_t) = Q(s_t, a_t) - V(s_t)$
 
 很多NLP出身的同学（比如我），经常会因为强化学习的基础概念模糊，导致长期对 RLHF 一知半解，这里我用几个例子来做帮助大家更好的认知。
 
@@ -43,10 +42,15 @@ prompt：中国的首都是哪里？ answer：首都是南京
 # RLHF完整流程
 有了RLHF 和 RL 的基础知识后，我们来介绍每个模型的作用：
 
-- Reward_model 负责给 LLM 生成的句子打分
 - Actor_model 就是我们要优化的 LLM
-- Critic_model 负责评估 Actor_model 的策略，计算状态值函数，也就是上面提到的`V`函数（**Reward模型只负责给最后一个token或者说整个句子打分，给之前token打分的重任靠Critic_model 完成**）
+
 - Reference_model 是一个标杆，为的是让我们的 Actor_model 在训练时不要偏离原始模型太远，保证其不会失去原本的说话能力
+
+- Reward_model 负责给 LLM 生成的句子打分
+
+- Critic_model 负责评估 Actor_model 的策略，计算状态值函数，也就是上面提到的`V`函数（**Reward模型只负责给最后一个token或者说整个句子打分，给之前token打分的重任靠Critic_model 完成**）
+
+
 
 ## RLHF的第一个环节：让模型生成答案，并对其打分
 
